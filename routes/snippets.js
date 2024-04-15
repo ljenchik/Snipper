@@ -33,12 +33,26 @@ router.get("/", async (req, res, next) => {
 
 // get a snippet by id
 router.get("/:id", async (req, res, next) => {
-    const snippet_id = parseInt(req.params.id);
-    const found_snippet = await Snippet.findByPk(snippet_id);
-    if (!found_snippet) {
-        return res.status(404).json({ error: "Snippet not found" });
+    try {
+        const snippet_id = parseInt(req.params.id);
+        const found_snippet = await Snippet.findByPk(snippet_id);
+
+        if (!found_snippet) {
+            return res.status(404).json({ error: "Snippet not found" });
+        }
+
+        // Decrypt the snippet's code
+        const decrypted_snippet = {
+            language: found_snippet.language,
+            code: decrypt(found_snippet.code),
+        };
+
+        // Respond with the decrypted snippet
+        res.json(decrypted_snippet);
+    } catch (error) {
+        // Handle errors
+        next(error);
     }
-    res.json(found_snippet);
 });
 
 // delete a snippet by id
