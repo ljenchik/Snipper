@@ -34,14 +34,12 @@ function encrypt(plainText) {
 }
 
 function decrypt(input) {
-    console.log("input: ", input);
     // split it into the IV which we prefixed
     // and the text we want to decrypt
     const parts = input.split(":");
 
     // turn the IV into a buffer (it is currently hex)
     const iv = Buffer.from(parts[0], "hex");
-    console.log("iv: ", iv);
 
     // this is the encrypted text we want to decrypt again
     const encryptedText = parts[1];
