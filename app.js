@@ -1,30 +1,39 @@
 // load environment variables from .env or elsewhere
 require("dotenv").config();
 const express = require("express");
-const app = express();
+const routes = require("./routes");
+const { auth } = require("express-openid-connect");
+
 const morgan = require("morgan");
 const path = require("path");
 const cors = require("cors");
 
-// Allow CORS requests
-app.use(cors());
-// logging middleware
-app.use(morgan("dev"));
-// parsing middleware for form input data & json
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+const app = express();
 
-// serve up static files (e.g. html and css files)
+const { AUTH0_SECRET, AUTH0_AUDIENCE, AUTH0_CLIENT_ID, AUTH0_BASE_URL } =
+    process.env;
+
+const config = {
+    authRequired: true,
+    auth0Logout: true,
+    secret: AUTH0_SECRET,
+    baseURL: AUTH0_AUDIENCE,
+    clientID: AUTH0_CLIENT_ID,
+    issuerBaseURL: AUTH0_BASE_URL,
+};
+
+// middleware
+app.use(cors());
+app.use(morgan("dev"));
+app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "../dist")));
 
-const routes = require("./routes");
-
 app.use(express.json());
+app.use(auth(config));
 
 app.use("/snippets", routes.snippets);
 app.use("/users", routes.users);
 
-// 404 handler
 app.use((req, res) => {
     res.status(404).send({
         error: "404 - Not Found",
